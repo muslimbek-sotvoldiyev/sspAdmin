@@ -1,4 +1,4 @@
-"use clinr"
+"use client";
 import React, { useState, useEffect } from "react";
 import { useGetEmployeesIdQuery, useGetRequestQuery } from "@/lib/service/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@mui/material";
