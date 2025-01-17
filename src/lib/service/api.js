@@ -46,20 +46,23 @@ const api = createApi({
       }),
     }),
 
-    getServices: builder.query({
-      query: () => "/service/",
-    }),
     getEmployees: builder.query({
       query: ({ page = 1, page_size = 10 }) =>
         `employees/?page=${page}&page_size=${page_size}`,
     }),
 
-    getEmployeesId: builder.query({
+    getEmployeeId: builder.query({
       query: ({ id }) => `employees/${id}/`,
     }),
-    getRequest: builder.query({
-      query: ({ page = 1, page_size = 10, employee }) =>
-        `employees/?page=${page}&page_size=${page_size}&employee=${employee}`,
+
+    getEmployesInRequests: builder.query({
+      query: ({ page = 1, page_size = 10, employee  }) =>
+        `/requests?employee=${employee}&page=${page}&page_size=${page_size}`,
+    }),
+
+    getRequests: builder.query({
+      query: ({ page = 1, page_size = 10 }) =>
+        `/requests?page=${page}&page_size=${page_size}/`,
     }),
   }),
 });
@@ -69,7 +72,8 @@ export const {
   useRefreshTokenMutation,
   useLoginMutation,
   useGetEmployeesQuery,
-  useGetEmployeesIdQuery,
-  useGetRequestQuery,
+  useGetEmployeeIdQuery,
+  useGetEmployesInRequestsQuery,
+  useGetRequestsQuery,
 } = api;
 export default api;

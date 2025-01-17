@@ -1,174 +1,223 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { useGetEmployeesIdQuery, useGetRequestQuery } from "@/lib/service/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@mui/material";
+
+import React, { useState } from "react";
 import {
-  ChevronLeft,
-  ChevronRight,
-  User,
-  FileText,
-  Loader2,
-} from "lucide-react";
-import { Alert, AlertDescription } from "@mui/material";
-import { useRouter } from "next/router"; // Correct import
+  useGetEmployeeIdQuery,
+  useGetEmployesInRequestsQuery,
+} from "@/lib/service/api";
+import { useParams } from "next/navigation";
+import { CircularProgress } from "@mui/material";
 
-const EmployeeDetail = () => {
-  const router = useRouter();
-  const { id } = router.query; // Get the dynamic route parameter
-
-  // Early exit if id is not available yet
-  if (!id) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-lg text-gray-600">Loading employee details...</p>
-      </div>
-    );
-  }
-
+export default function Page() {
+  const { id } = useParams();
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [page_size, setPage_size] = useState(5);
 
-  const {
-    data: employeeData,
-    error: employeeError,
-    isLoading: employeeLoading,
-  } = useGetEmployeesIdQuery({ id });
+  const { data, isLoading, error } = useGetEmployesInRequestsQuery({
+    page,
+    page_size,
+    employee: id,
+  });
 
-  const {
-    data: requestData,
-    error: requestError,
-    isLoading: requestLoading,
-  } = useGetRequestQuery({ employee: id, page, page_size: pageSize });
+  const { data: employeeData, isLoading: isEmployeeLoading } =
+    useGetEmployeeIdQuery({ id });
 
-  if (employeeLoading || requestLoading) {
+  if (isLoading || isEmployeeLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-lg text-gray-600">Loading employee details...</p>
-        </div>
+      <div className="flex justify-center items-center h-full">
+        <CircularProgress />
       </div>
     );
   }
 
-  if (employeeError || requestError) {
+  if (error) {
     return (
-      <div className="container mx-auto p-6">
-        <Alert variant="destructive">
-          <AlertDescription>
-            There was an error loading the employee details. Please try again
-            later.
-          </AlertDescription>
-        </Alert>
+      <div className="flex justify-center items-center h-full text-red-500">
+        <p>Error: Unable to fetch data. Please try again later.</p>
       </div>
     );
   }
 
-  if (!employeeData || !requestData) {
-    return (
-      <div className="container mx-auto p-6">
-        <Alert variant="destructive">
-          <AlertDescription>
-            No data available for this employee. Please try again later.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
+  const results = data?.results || [];
+  const count = data?.count || 0;
+  const page_count = data?.page_count || 1;
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
-      <div className="flex items-center gap-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-          <User className="h-6 w-6 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Employee Details</h1>
-          <p className="text-sm text-gray-500">ID: {id}</p>
-        </div>
+    <div className="p-5">
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="text-2xl font-bold">Employees in Request</h1>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Employee Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-lg bg-gray-50 p-4">
-              <pre className="whitespace-pre-wrap text-sm">
-                {JSON.stringify(employeeData, null, 2)}
-              </pre>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Request History
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-lg bg-gray-50 p-4">
-              <pre className="whitespace-pre-wrap text-sm">
-                {JSON.stringify(requestData, null, 2)}
-              </pre>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <div className="flex items-center gap-2">
-              <button
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 disabled:opacity-50"
-                onClick={() => setPage(page - 1)}
-                disabled={page <= 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <span className="text-sm text-gray-600">
-                Page {page} of {Math.ceil((requestData?.count || 0) / pageSize)}
-              </span>
-              <button
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 disabled:opacity-50"
-                onClick={() => setPage(page + 1)}
-                disabled={!requestData?.next}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <label htmlFor="pageSize" className="text-sm text-gray-600">
-                Items per page:
-              </label>
-              <select
-                id="pageSize"
-                className="rounded-md border border-gray-200 px-2 py-1 text-sm"
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
-                  setPage(1);
-                }}
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-              </select>
-            </div>
+      {/* Employee Details */}
+      {employeeData && (
+        <div className="mb-5 p-4 border border-gray-300 rounded-lg shadow-md bg-gray-50 flex gap-4">
+          <img
+            src={employeeData.image}
+            alt={`${employeeData.first_name} ${employeeData.last_name}`}
+            className="w-32 h-32 rounded-full object-cover"
+          />
+          <div>
+            <h2 className="text-xl font-semibold mb-3">
+              {employeeData.first_name} {employeeData.last_name}
+            </h2>
+            <p>
+              <strong>Role:</strong> {employeeData.role}
+            </p>
+            <p>
+              <strong>Phone:</strong> {employeeData.phone_number}
+            </p>
+            <p>
+              <strong>Region:</strong> {employeeData.region}
+            </p>
+            <p>
+              <strong>District:</strong> {employeeData.district}
+            </p>
+            <p>
+              <strong>Passport:</strong> {employeeData.passport}
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between mb-5">
+        <p className="text-gray-600 mb-5">
+          Showing {results.length} of {count} requests
+        </p>
+        <button
+          onClick={() => console.log("Add Employee button clicked")}
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+        >
+          Qo'shish
+        </button>
+      </div>
+      {/* Table Section */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full table-auto border-collapse border border-gray-300">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="border border-gray-300 px-4 py-2 text-left">#</th>
+              <th className="border border-gray-300 px-4 py-2 text-left">
+                Priority
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left">
+                Description
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left">
+                Status
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left">
+                Company
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left">
+                Phone
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left">
+                Images
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left">
+                File
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {results.map((request, index) => (
+              <tr
+                key={request.id}
+                className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+              >
+                <td className="border border-gray-300 px-4 py-2">
+                  {index + 1}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  {request.priority}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  {request.description}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  <span
+                    className={`${
+                      request.status === "pending"
+                        ? "text-yellow-500"
+                        : "text-green-500"
+                    } font-semibold`}
+                  >
+                    {request.status}
+                  </span>
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  {request.company.name}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  {request.company.phone_number}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  <div className="flex gap-2">
+                    {request.images.map((image, idx) => (
+                      <img
+                        key={idx}
+                        src={image.src}
+                        alt={`Request image ${idx + 1}`}
+                        className="w-16 h-16 rounded-md object-cover"
+                      />
+                    ))}
+                  </div>
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  <a
+                    href={request.file}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 underline"
+                  >
+                    Download File
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {/* Pagination Section */}
+      <div className="flex items-center justify-center gap-3 mt-5">
+        <button
+          disabled={page === 1}
+          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+          className={`p-2 rounded-lg border border-gray-300 ${
+            page === 1
+              ? "bg-gray-200 cursor-not-allowed"
+              : "bg-white hover:bg-gray-100"
+          }`}
+        >
+          Previous
+        </button>
+
+        <span className="font-bold">
+          Page {page} of {page_count}
+        </span>
+
+        <button
+          disabled={page === page_count}
+          onClick={() => setPage((prev) => Math.min(prev + 1, page_count))}
+          className={`p-2 rounded-lg border border-gray-300 ${
+            page === page_count
+              ? "bg-gray-200 cursor-not-allowed"
+              : "bg-white hover:bg-gray-100"
+          }`}
+        >
+          Next
+        </button>
+
+        <select
+          className="ml-4 py-2 px-3 border border-gray-300 rounded-md"
+          value={page_size}
+          onChange={(e) => setPage_size(Number(e.target.value))}
+        >
+          <option value={5}>5</option>
+          <option value={10}>10</option>
+          <option value={15}>15</option>
+        </select>
+      </div>
     </div>
   );
-};
-
-export default EmployeeDetail;
+}

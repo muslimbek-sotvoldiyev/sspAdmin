@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 const NAV_ITEMS = [
   { title: "Bosh sahifa", icon: <Home />, path: "/" },
   { title: "employes", icon: <Group />, path: "/employes" },
-  // { title: "Doctors", icon: <Group />, path: "/doctors" },
+  { title: "Sorovnomalar", icon: <Group />, path: "/requests" },
 ];
 
 const Navbar = () => {
