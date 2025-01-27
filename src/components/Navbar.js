@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -11,14 +11,15 @@ import {
   Typography,
   CssBaseline,
   Box,
-} from "@mui/material";
-import { Menu, Home, Group } from "@mui/icons-material";
-import { useRouter } from "next/navigation";
+} from '@mui/material';
+import { Menu, Home, Group } from '@mui/icons-material';
+import { useRouter } from 'next/navigation';
+import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
 
 const NAV_ITEMS = [
-  { title: "Bosh sahifa", icon: <Home />, path: "/" },
-  { title: "employes", icon: <Group />, path: "/employes" },
-  { title: "Sorovnomalar", icon: <Group />, path: "/requests" },
+  { title: 'Bosh sahifa', icon: <Home />, path: '/' },
+  { title: 'employes', icon: <Group />, path: '/employes' },
+  { title: 'Sorovnomalar', icon: <RequestQuoteIcon />, path: '/requests' },
 ];
 
 const Navbar = () => {
@@ -34,12 +35,9 @@ const Navbar = () => {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar
-        position="fixed"
-        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
-      >
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <IconButton color="inherit" edge="start" onClick={toggleDrawer}>
             <Menu />
@@ -56,10 +54,10 @@ const Navbar = () => {
         sx={{
           width: isDrawerOpen ? 240 : 70,
           flexShrink: 0,
-          "& .MuiDrawer-paper": {
+          '& .MuiDrawer-paper': {
             width: isDrawerOpen ? 240 : 70,
-            transition: "width 0.3s",
-            overflowX: "hidden",
+            transition: 'width 0.3s',
+            overflowX: 'hidden',
           },
         }}
       >
@@ -71,18 +69,16 @@ const Navbar = () => {
               key={index}
               onClick={() => handleNavigate(item.path)}
               sx={{
-                display: "flex",
-                justifyContent: isDrawerOpen ? "flex-start" : "center",
-                paddingTop: "10px 16px",
-                cursor: "pointer",
-                "&:hover": {
-                  backgroundColor: "rgba(0, 0, 0, 0.04)",
+                display: 'flex',
+                justifyContent: isDrawerOpen ? 'flex-start' : 'center',
+                paddingTop: '10px 16px',
+                cursor: 'pointer',
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.04)',
                 },
               }}
             >
-              <ListItemIcon sx={{ justifyContent: "center" }}>
-                {item.icon}
-              </ListItemIcon>
+              <ListItemIcon sx={{ justifyContent: 'center' }}>{item.icon}</ListItemIcon>
               {isDrawerOpen && <ListItemText primary={item.title} />}
             </ListItem>
           ))}

@@ -1,68 +1,78 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+// https://staffflow.pythonanywhere.com/swagger/
 const api = createApi({
-  reducerPath: "api",
+  reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://staffflow.pythonanywhere.com/api/",
+    baseUrl: 'https://staffflow.pythonanywhere.com/api/',
     prepareHeaders: (headers) => {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem('authToken');
       let parsedToken;
       try {
         parsedToken = JSON.parse(token);
       } catch (e) {
-        console.error("Invalid token in localStorage:", e);
+        console.error('Invalid token in localStorage:', e);
       }
 
       if (parsedToken?.access) {
-        headers.set("Authorization", `Bearer ${parsedToken.access}`);
+        headers.set('Authorization', `Bearer ${parsedToken.access}`);
       }
+      headers.set('Content-Type', 'application/json');
       return headers;
     },
   }),
   endpoints: (builder) => ({
     login: builder.mutation({
       query: ({ phone_number, password }) => ({
-        url: "/token/",
-        method: "POST",
+        url: '/token/',
+        method: 'POST',
         body: { phone_number, password },
-        headers: {
-          "Content-Type": "application/json",
-        },
       }),
     }),
 
     tokenVerify: builder.mutation({
       query: (token) => ({
-        url: "/token/verify/",
-        method: "POST",
+        url: '/token/verify/',
+        method: 'POST',
         body: { token },
       }),
     }),
     refreshToken: builder.mutation({
       query: (refresh) => ({
-        url: "/token/refresh/",
-        method: "POST",
+        url: '/token/refresh/',
+        method: 'POST',
         body: { refresh },
       }),
     }),
 
     getEmployees: builder.query({
-      query: ({ page = 1, page_size = 10 }) =>
-        `employees/?page=${page}&page_size=${page_size}`,
+      query: ({ page = 1, page_size = 10 }) => `employees/?page=${page}&page_size=${page_size}`,
     }),
 
     getEmployeeId: builder.query({
       query: ({ id }) => `employees/${id}/`,
     }),
 
-    getEmployesInRequests: builder.query({
-      query: ({ page = 1, page_size = 10, employee  }) =>
-        `/requests?employee=${employee}&page=${page}&page_size=${page_size}`,
+    getEmployesInRequestsPerformer: builder.query({
+      query: ({ page = 1, page_size = 10, uploader, performer }) =>
+        `/requests?performer=${performer}&page=${page}&page_size=${page_size}`,
+    }),
+
+    getEmployesInRequestsUploader: builder.query({
+      query: ({ page = 1, page_size = 10, uploader }) =>
+        `/requests?uploader=${uploader}&page=${page}&page_size=${page_size}`,
     }),
 
     getRequests: builder.query({
-      query: ({ page = 1, page_size = 10 }) =>
-        `/requests?page=${page}&page_size=${page_size}/`,
+      query: ({ page = 1, page_size = 10 }) => `/requests/?page=${page}&page_size=${page_size}`,
+    }),
+
+    addEmployee: builder.mutation({
+      query: (newEmployee) => ({
+        url: '/employees/',
+        method: 'POST',
+        body: newEmployee,
+      }),
     }),
   }),
 });
@@ -73,7 +83,10 @@ export const {
   useLoginMutation,
   useGetEmployeesQuery,
   useGetEmployeeIdQuery,
-  useGetEmployesInRequestsQuery,
+  useGetEmployesInRequestsPerformerQuery,
+  useGetEmployesInRequestsUploaderQuery,
   useGetRequestsQuery,
+  useAddEmployeeMutation,
 } = api;
+
 export default api;
